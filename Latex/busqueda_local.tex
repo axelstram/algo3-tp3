@@ -1,0 +1,156 @@
+%busqueda local
+\subsection{Descripción del algoritmo}
+
+\subsubsection{Solución inicial}
+
+La solución inicial, en este caso, se toma como el camino mínimo, para $w_2$, entre los dos nodos. Sabemos que si el peso del camino, 
+para $w_1$, es menor a la cota, entonces la solución inicial es también la óptima, por lo que podemos devolverla y finalizar el algoritmo sin 
+necesidad de recorrer la vecindad. En caso contrario, tomamos el camino mínimo para $w_1$ y, si el peso de este es menor que la cota K, 
+utilizamos
+este camino como solución inicial. Si no cumple con la cota, al ser el mínimo camino respecto a $w_1$, entonces ninguno la cumple, y por lo tanto la 
+instancia del problema no tiene solución, por lo que devolvemos el camino vacío.
+
+\subsubsection{Vecindad}
+Definimos como vecinos de una solución, cuyo camino llamamos $C$, aquellas soluciones que difieren en a lo sumo un camino mínimo para $w_2$,
+siempre y cuando, estas ``soluciones'' estén acotadas correctamente para $w_1$.
+Es decir, para todo par de nodos, $C_i$ y $C_j$, consideramos como  ``vecino'' de $C$ al camino $C'$ = $C_1$ .. $C_i$ $C_{min}$ $C_j$ .. $C_k$, 
+donde k es la longitud de $C$, $C_n$ el n-esimo nodo de $C$, y $C_{min}$ el camino óptimo entre $C_i$ y $ C_j$. Luego, entre estos ``vecinos'', 
+tomamos como verdaderos vecinos a aquellos ``vecinos'' que cumplan la cota para $w_1$.
+
+
+Para simplificar el proceso, recorreremos la vecindad en orden. Vamos a considerar los caminos óptimos entre un nodo $v$ y todos los demás, 
+donde $C_k$ es el primer nodo que nos genera una mejora mediante este proceso. 
+Es decir, tomamos el nodo $C_k$, calculamos el camino mínimo para $w_2$ para todos los nodos del camino, si genera una mejora, actualizamos 
+el camino eligiendo el vecino óptimo, sino, repetimos el proceso con el nodo $C_{k+1}$ hasta llegar al final.
+
+
+\subsubsection{Estructura de la implementación}
+El algoritmo consiste en, dada una solución inicial, recorrer la vecindad de la misma y tomar la mejor solución. Sin embargo, en cada iteración
+nos ``olvidamos'' del pedazo de camino que ya modificamos, es decir, si en un paso de la iteración optimizamos el camino hasta el nodo $C_i$, 
+en el siguiente paso de la iteración vamos a correr el algoritmo para el camino formado por $C_{[i..k]}$, donde k es la longitud de $C_K$.
+
+Esto es válido, pues no puede ser que yo consiga un mejor camino considerando cada nodo del camino $C_{cambiado}$=$C_1$..$C_i$. Esto se debe a 
+que para cada nodo $v$ del 
+camino, tomo el camino mínimo entre $C_1$ y $v$, luego, si existiese un camino $C'$ entre $w \neq C_1$ y $v$, con $w \in C_{cambiado}$, que
+mejorara mi solución
+ $C$ original más que $C_{cambiado}.. C_{[i..k]}$, podría construir un camino $C''$ entre $C_1$ y $v$, yendo de a través de $C_{cambiado}$ a 
+ $w$, y luego de manera óptima a $v$.
+ Luego, tendría que haber hallado el camino $C''$ para llegar a $v$ o uno mejor (pues 
+ chequeo para cada nodo el óptimo), y por lo tanto, debería haber sido comparado dentro de la vecindad. Luego, como $C''$ mejora más la solución,
+ $C''$ debería haber sido el camino elegido para optimizar. Los cual es absurdo,
+ porque partimos del hecho de que $C_{cambiado}$ me daba la mejor solución para los caminos iniciados en $C_1$. 
+
+Las iteraciones continúan hasta que se terminen los nodos del camino. Luego devolvemos el camino reconstruido. 
+
+
+\subsection{Pseudocódigo y Complejidad}
+
+%%                INDENTAR ESTA MIERDA
+
+\begin{algoritmo}{Busqueda Local}{grafo, verticeActual, verticeDestino, K}
+
+caminoInicial \asignar GenerarSolucionInicial(grafo, u, v, K) \tcc*{$O$($n$)}
+ 
+\If(\tcc*[f]{$O$($1$)}){Longitud(caminoInicial) == 0}{
+   return camino vacio
+}
+
+iter \asignar IteradorDeAristasAlInicioDe(caminoInicial)  \tcc*{$O$($n$)}
+ 
+ \While(\tcc*[f]{$O$($n³ + nmlogn$)}) {iter no llego al final} {
+    
+    x \asignar ObtenerVerticeIzquierdo(AristaActual(iter)) \tcc*{$O$($1$)}
+    mejorCaminoMinimoEnVecindad \asignar HallarMejorCaminoEnVecindadDeX(grafo, caminoInicial, x, iter, K) \tcc*{$O$($n² + mlogn$)}
+    
+    \uIf(\tcc*[f]{$O$($1$)}){Longitud(mejorCaminoMinimoEnVecindad) != 0}{
+      MejorarCaminoInicial(caminoInicial, mejorCaminoMinimoEnVecindad, iter, x)  \tcc*{$O$($n$)}
+      }\Else{
+      Avanzar(iter)	\tcc*{$O$($1$)}
+      }
+ }
+
+ return caminoInicial
+\end{algoritmo}
+
+Complejidad Total: $O$($n³ + nmlogn$)
+
+~\\
+\newline
+\begin{algoritmo}{HallarMejorCaminoEnVecindadDeX}{grafo, caminoInicial, x, iter, K}
+
+ mejorCaminoMinimoEnVecindad \asignar Vacio()	\tcc*{$O$($1$)}
+ iter2 \asignar iter	\tcc*{$O$($1$)}
+ arbolDeDistancias \asignar Dijkstra(grafo, x, PesoW2)  \tcc*{$O$($mlogn$)}\;
+ 
+  \While(\tcc*[f]{$O$($n²$)}) {iter2 no llego al final} {
+    y \asignar ObtenerVerticeDerecho(AristaActual(iter2))	\tcc*{$O$($1$)}
+    caminoMinimoEntreXeY \asignar ArmarCaminoEntre(x, y, arbolDeDistancias, grafo)	\tcc*{$O$($n$)}
+    pesoW1DeLasAristasEntreXeY \asignar ObtenerPesoDeLasAristasEntre(x, y, PesoW1, caminoInicial) \tcc*{$O$($1$)}
+    pesoW2DeLasAristasEntreXeY \asignar ObtenerPesoDeLasAristasEntre(x, y, PesoW2, caminoInicial) \tcc*{$O$($1$)}\;
+    \If(\tcc*[f]{$O$($1$)}){PesoTotalEnW1(caminoInicial) + PesoTotalEnW1(caminoMinimoEntreXeY) - pesoW1DeLasAristasEntreXeY < K \; $\wedge$ PesoTotalEnW2(caminoMinimoEntreXeY) < pesoW2DeLasAristasEntreXeY}{
+       
+       ObtenerCaminoMinimoEntre(caminoMinimoEntreXeY, mejorCaminoMinimoEnVecindad) \tcc*{$O$($n$)}
+
+    }
+    
+  }
+ 
+\end{algoritmo}
+
+Complejidad Total: $O$($n² + mlogn$)
+
+~\\
+\newline
+\begin{algoritmo}{MejorarCaminoInicial}{caminoInicial, mejorCaminoMinimoEnVecindad, iter, x}
+
+ iterFinalCaminoMinimo \asignar CrearIteradorAlFinal(mejorCaminoMinimoEnVecindad) \tcc*{$O$($1$)}
+ finalCaminoMinimo \asignar ObtenerVerticeDerecho(AristaActual(iterFinalCaminoMinimo)) \tcc*{$O$($1$)}
+ AvanzarHasta(finalCaminoMinimo, iter) \tcc*{$O$($n$)}
+ EliminarAristasEntre(x, finalCaminoMinimo, caminoInicial) \tcc*{$O$($n$)}
+ UnirCon(mejorCaminoMinimoEnVecindad, caminoInicial) \tcc*{$O$($n$)}
+ 
+\end{algoritmo}
+
+Complejidad Total: $O$($n$)
+
+
+~\\
+\newline
+
+
+
+\subsection{Casos Patológicos}
+
+En aquellos grafos donde exista un camino $C_{max(w_1), min(w_2)}$ y un $C_{min(w_1+1), min(w_2+1)}$ aislado, es decir, que no comparta 
+vertices con cualquier otro caminos entre los nodos inicial y final, con 
+$k$ la cota para $w_1$, $max(w_1)>k$ y $min(w_1+1)\leq k$ y empiece el algoritmo con un $C_{inicial} \neq C_{min(w_1+1), min(w_2+1)}$ 
+entonces esta heurística no tiene forma de hallar este camino óptimo $C_{min(w_1+1), min(w_2+1)}$, 
+que podría o no ser el único, dependiendo si hay mas de una solución óptima. 
+
+Esto se debe a que cuando busque los caminos mínimos, para $w_2$, entre todo par de nodos del camino inicial, no encontrara a 
+$C_{min(w_1+1), min(w_2+1)}$ pues no es el mínimo, sin embargo, si es el mínimo que cumple las condiciones.
+
+Esto puede generalizarse para cualquier grafo que tenga un camino $C$ solución óptima que sea de peso mayor para $w_2$ 
+a todos los caminos mínimo para $w_2$ que no cumplan la cota, y de peso menor para todos los demás que si, y sin embargo no tenga nodos 
+en común con el camino inicial.  
+
+
+\subsection{Experimentación}
+
+\subsubsection{General}
+Para la experimentación general usamos el mismo generador aleatorio que el caso exacto, medimos los tiempos de ejecución y los dividimos por la
+complejidad calculada en el punto anterior en función del tamaño de la entrada, antes de gráficar. Lo que observamos en el gráfico es que la 
+curva tiende a cada vez mas a cero. Esto nos muestra, empíricamente, que la complejidad es, en el caso promedio, menor que la esperada, lo que 
+implica que solo en el peor caso se alcanza realmente la cota.
+
+\includegraphics[width=1\textwidth]{busqueda_local_grafico.png}
+
+\subsubsection{Casos Patológicos}
+Para la experimentacion de los casos patologicos, generamos un test que nos da grafos completos a los que añadimos los camino que describimos en 
+an la subseccion 5.3. El hecho de que sean completos es por simplicidad en la implementacion. En el grafico presentamos la 
+comparacion de los resultados contra el algoritmo exacto.
+
+Podemos observar que los caminos difieren en la mayoria de los casos, y en los casos que no, se debe a que hay un camino dentro del subgrafo completo
+de peso equivalente al optimo que agregamos.
+
+\includegraphics[width=1\textwidth]{casos_patologicos_BL.png}

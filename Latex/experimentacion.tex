@@ -1,0 +1,63 @@
+\subsection{Generacion de la nueva instancia} 
+Para esta parte de la experimentación, creamos nuevas instancias con el generador aleatorio y corrimos la misma instancia con las tres
+heurísticas,
+para comparar las soluciones obtenidas y el tiempo de invertido en obtenerlas.
+
+\subsection{Comparación temporal}
+
+A continuación presentamos la comparación temporal entre gráficos de distintas densidades. 
+Léase densidad para grafos, como el porcentaje de aristas con respecto al total posible de aristas ($n^2$, con n la cantidad de nodos). 
+
+Respectivamente, los gráficos representan las comparaciones para gráficos con un 50 $\textperthousand$, 75 $\textperthousand$ y 
+100 $\textperthousand$ de aristas. Podemos ver que la relación entre todas se mantiene equivalente.
+
+
+
+\includegraphics[width=1\textwidth]{heuristicas_grafico_densidad_50.png}
+
+\includegraphics[width=1\textwidth]{heuristicas_grafico_densidad_75.png}
+
+\includegraphics[width=1\textwidth]{heuristicas_grafico_densidad_100.png}
+
+
+
+\subsection{Comparación funcional} Comparación entre las respuesta obtenidas.
+A continuación presentamos un gráfico que detalla la diferencia entre los caminos mínimos obtenidos por cada heurística. Como era de 
+esperar, la heurística Grasp devuelve los caminos de menor peso en la mayoría de los casos. 
+
+\includegraphics[width=0.8\textwidth]{compFunc}
+
+
+
+\subsection{Comparación con la solución óptima}
+A continuación presentamos una tabla que detalla la diferencia entre los caminos mínimos obtenidos por cada heurística comparados con el 
+algoritmo exacto. como se puede observar, excepto en las filas con $\sharp$Vertices 9, 13 y 15, las heurísticas devuelven un resultado 
+idéntico al generado por el algoritmo exacto, esto se debe a que todavía los grafos son pequeños y es mas probable que las heurísticas 
+encuentren el camino exacto. en las filas con $\sharp$Vertices 9, 13 y 15 es notable la diferencia entre resultados de las heurísticas, 
+dando grasp una solución mucho mejor que las otras dos.
+\begin{center}
+  \begin{tabular}{| l | c | r | c | r | c | r | c | r | c | r | }
+    \hline
+	$\sharp$Vertices & $\sharp$Aristas & W2 Exacto & W2 Local & W2 Goloso & W2 Grasp\\ \hline
+	1 & 0 & no & no & no & no  \\ \hline
+	2 & 1 & 40 & 40 & 40 & 40 \\ \hline
+     	3 & 3 & no & no & no & no \\ \hline
+	4 & 6 & 25 & 25 & 25 & 25 \\ \hline
+	5 & 10 & 54 & 54 & 54 & 54 \\ \hline
+	6 & 15 & no & no & no & no \\ \hline
+	7 & 21 & 8 & 8 & 8 & 8 \\ \hline
+	8 & 28 & no & no & no & no \\ \hline
+	9 & 36 & 71 & 238 & 238 & 71 \\ \hline
+	10 & 45 & 28 & 28 & 28 & 28 \\ \hline
+	11 & 55 & 29 & 29 & 29 & 29 \\ \hline
+	12 & 66 & 10 & 10 & 10 & 10 \\ \hline
+	13 & 78 & 38 & 111 & 167 & 38 \\ \hline
+	14 & 91 & 38 & 38 & 38 & 38 \\ \hline
+	15 & 105 & 43 & 107 & 209 & 43 \\ \hline
+
+
+     \hline
+   \end{tabular}
+ \end{center}
+ 
+

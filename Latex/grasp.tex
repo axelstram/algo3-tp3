@@ -1,0 +1,202 @@
+\subsection{Descripción del algoritmo}
+El algoritmo corre Dijkstra entre $d$ y todos los demás nodos para ambos pesos por separado, obteniendo así el peso de cada camino mínimo. 
+Estos pesos mínimos se guardan en dos tablas de distancias $tDW1$ y $tDW2$.
+
+Luego de hacer esto generamos un camino aleatorio como base para poder utilizar la búsqueda local sobre él, esto se logra de la siguiente manera:
+En el nodo inicial $v$, chequea todos los nodos desde los cuales es posible obtener una solución, es decir, todos los nodos
+para los cuales aún hay un camino para llegar al nodo destino sin superar la cota para $w_1$, llamamos a este conjunto de nodos $nodosPosibles$, 
+luego se ordenan estos nodos de acuerdo a su peso entre este y el nodo destino, y se queda con un tercio de estos en $nodosPosibles$, eligiendo entre 
+todos los que tienen camino mínimo de menor peso al nodo destino, en el caso en que no se encuentre ningún nodo posible se extenderá el camino usando 
+el camino mínimo entre el nodo actual y el destino, y luego se le quitarán los ciclos al camino.
+
+Luego el algoritmo elige aleatoriamente un nodo $v'$ entre $nodosPosibles$ que marca como el nodo inicial y repite el proceso. Cuando encuentra como 
+adyacente al nodo destino, termina el proceso. Sin embargo, podría ocurrir que $nodosPosibles$ sea vacío.
+Esto ocurre cuando se usaron todos los nodos de la componente conexa donde se encuentran el inicio y el destino que tienen un camino acotado, 
+pero el nodo actual tiene una arista con el destino de peso $w_1$ que, sumado con el resto de las aristas, supera la cota pedida.
+En este caso, obtenemos el camino mínimo entre el nodo actual y el destino según $w_1$ y lo unimos con el construido hasta el momento, quitando los ciclos que se formen, y lo devolvemos.
+
+Teniendo este camino como base podemos correr nuestra búsqueda local y guardar este camino como el $mejorCamino$. Repetimos el proceso de crear una 
+base y de correr nuestra búsqueda local hasta que $iteracionesSinCambios$ supere $cotaSinCambios$ que es un número pasado por parámetro, 
+cada vez que lo hacemos comparamos este nuevo $caminoActual$ con el $mejorCamino$ y si es mejor que este reemplazamos $mejorCamino$ por $caminoActual$ y 
+volvemos $iteracionesSinCambios$ a cero, caso contrario aumentamos $iteracionesSinCambios$ en uno. Lo que esto logra es que siga intentando mejorar el $mejorCamino$ 
+hasta que pase una cantidad determinada de iteraciones sin conseguir una mejora.
+
+\subsection{Pseudocódigo y complejidad}
+
+A fin de hacer más amena la lectura del pseudocódigo utilizaremos el renombre $n$ para la cantidad de
+vértices del grafo recibido como entrada, y $m$ para la cantidad de aristas.
+El orden de complejidad de cada línea está escrito al final de la misma, las aclaraciones/justificaciones de los órdenes no triviales se encuentran debajo del pseudocódigo.
+
+\subsubsection{Pseudocódigo}
+\begin{algoritmo}{GRASP}{\Inout{grafo}{Grafo}, \In{u}{Vértice}, \In{v}{Vértice}, \In{K}{double}, \In{semilla}{Nat}, \In{cotaIteraciones}{Nat}}[Camino]
+[][][$O$($m*cotaIteraciones*(n^3+n*m*(log(n)+log(m))))$)$_1$]
+\;
+  vector<double> tablaDistanciasW1 \asignar crear con n casillas inicializadas con el valor -1\tcc*{$O$($n$)}
+  vector<double> tablaDistanciasW2 \asignar crear con n casillas inicializadas con el valor -1\tcc*{$O$($n$)}
+  inicializar tablaDistanciasW1 y tablaDistanciasW2 con los pesos W1 y W2, respectivamente, de los caminos minimos desde destino a todos los nodos del grafo \tcc*{$O$($m*log(n)+n^2$)$_2$}
+
+  \If(\tcc*[f]{$O$(1)}) {no hay un camino desde $u$ con peso $W_1 \leq K$ }{
+    \return camino vacio\tcc*{$O$(1)}
+  }
+  gen \asignar inicializar semilla\tcc*{$O$(1)}
+  Camino mejorCamino \asignar CaminoRandomGoloso(grafo, u, v, K, tablaDistanciasW1, tablaDistanciasW2, gen)\tcc*{$O$($m*(log(n)+n*log(m))+n^2$)}
+ 
+  mejorCamino \asignar BusquedaLocal(grafo, u, v, K, mejorCamino)\tcc*{$O$($n*m*log(n)$)$_4$}
+  Nat iteracionesSinCambios \asignar 0\tcc*{$O$(1)}
+  \While(\tcc*[f]{$O$($m*cotaIteraciones*(n^3+n*m*(log(n)+log(m)))$)$_3$}) {iteracionesSinCambios < cotaIteraciones} {
+    Camino caminoActual \asignar CaminoRandomGoloso(grafo, u, v, K, tablaDistanciasW1, tablaDistanciasW2, gen)\tcc*{$O$($m*(log(n)+n*log(m))+n^2$)}
+    caminoActual \asignar BusquedaLocal(grafo, u, v, K, caminoActual)\tcc*{$O$($n^3+n*m*log(n)$)$_4$}
+    \uIf(\tcc*[f]{$O$(1)}) {mejorCamino.PesoTotalEnW2() > caminoActual.PesoTotalEnW2()} {
+      mejorCamino \asignar caminoActual\tcc*{$O$($n$)}
+      iteracionesSinCambios \asignar 0\tcc*{$O$(1)}
+    }
+    \Else {iteracionesSinCambios++\tcc*{$O$(1)}} 
+  }
+
+  \return mejorCamino\tcc*{$O$($n$)}
+\end{algoritmo}
+
+\begin{algoritmo}{CaminoRandomGoloso}{\Inout{grafo}{Grafo}, \In{inicio}{Vértice}, \In{destino}{Vértice}, \In{K}{double}, \In{tablaDistanciasW1}{vector<double>},
+\In{tablaDistanciasW2}{vector<double>}, \In{gen}{}}[Camino]
+[][][$O$($m*(log(n)+n*log(m))+n^2$)$_5$]
+\;
+  Camino caminoRandom(grafo)\tcc*{$O$($n$)}
+  Vertice verticeActual \asignar inicio\tcc*{$O$(1)}
+  definir fraccionDeOpciones 3\tcc*{$O$(1)}
+  double kRestante \asignar K\tcc*{$O$(1)}
+  \While(\tcc*[f]{$O$($n*m*log(m)$)$_6$}) {verticeActual $\neq$ destino}{
+    list<Arista> aristas \asignar agregar las aristas incidentes a $verticeActual$, que no estén ya en el camino y que además 
+    pertenezcan a un camino entre $verticeActual$ y $destino$ cuyo peso en $W_1$ sea menor a kRestante\tcc*{$O$($m$)$_7$}
+    Nat cantOpciones \asignar aristas.size()\tcc*{$O$(1)}
+    \If(\tcc*[f]{$O$($m*log(n)+n$)}) {cantOpciones = 0}{
+      Camino extension \asignar grafo.HallarCaminoMinimoEntre(verticeActual, destino, PesoW1)\tcc*{$O$($m*log(n)$)}
+      caminoRandom.UnirSinCiclos(extension, destino)\tcc*{$O$($n$)}
+      \return caminoRandom\tcc*{$O$($n$)}
+    }
+    vector<AristaYPotencial> mejoresAristas \asignar Ordenar(aristas, tablaDistanciasW2, verticeActual)\tcc*{$O$($m*log(m)$)}
+    Nat maxOpciones \asignar grafo.CantidadDeVertices() / fraccionDeOpciones\tcc*{$O$(1)}
+    \If(\tcc*[f]{$O$($m$)}) {cantOpciones > maxOpciones}{
+      cantOpciones \asignar maxOpciones\tcc*{$O$(1)}
+    }
+    std::uniformintdistribution<> dis(0, cantOpciones-1); %alguien que me diga que carajos hace esto!!!
+    Nat numeroDeArista \asignar dis(gen)\tcc*{$O$(1)} \tcc{Elegimos una arista al azar y actualizamos la informacion.}
+    Arista\& aristaElegida \asignar mejoresAristas[numeroDeArista].first\tcc*{$O$(1)}
+    caminoRandom.AgregarArista(aristaElegida)\tcc*{$O$(1)}
+    verticeActual \asignar VerticeDeDestino(aristaElegida, verticeActual)\tcc*{$O$(1)}
+    kRestante \asignar kRestante - aristaElegida.PesoW1()\tcc*{$O$(1)}
+  }
+  \return caminoRandom\tcc*{$O$($n$)}
+\end{algoritmo}
+
+\subsubsection{Aclaraciones}
+
+1) Este algoritmo es iterativo por lo que la complejidad total es la suma de las complejidades de cada linea.
+
+2) En en código, en esta parte llamamos a la función InicializarCaminosMinimos. A continuación agregamos un breve análisis de la complejidad de esta función como explicación del orden de complejidad
+mencionado.
+ 
+\begin{algoritmo}{InicializarCaminosMinimos}{\Inout{grafo}{Grafo}, \In{destino}{Vertice}, \Inout{tablaDistanciasW1}{vector<double>}, \Inout{tablaDistanciasW2}{vector<double>}}[]
+[][][$O$($mlog(n)+n^2$)]
+\;
+  \tcc{tablaDistancias tiene que tener en la posición $i$ el valor de peso total del camino mínimo para el vértice i al destino.}
+  vector<Vertice> caminosW1 \asignar grafo.HallarCaminosMinimosDesde(destino, PesoW1)\tcc*{$O$($m*log(n)$)}
+  vector<Vertice> caminosW2 \asignar grafo.HallarCaminosMinimosDesde(destino, PesoW2)\tcc*{$O$($m*log(n)$)}
+  \For(\tcc*[f]{$O$($n^2$)}) {Nat i \asignar 1; i \asignar grafo.CantidadDeVertices(); i++}{
+    Camino miCaminoW1 \asignar grafo.ArmarCaminoEntre(destino, i, caminosW1)\tcc*{$O$($n$)}
+    Camino miCaminoW2 \asignar grafo.ArmarCaminoEntre(destino, i, caminosW2)\tcc*{$O$($n$)}
+    \If() {miCaminoW1.Longitud() $\neq$ 0}{
+      tablaDistanciasW1[i] = miCaminoW1.PesoTotalEnW1()\tcc*{$O$(1)}
+      tablaDistanciasW2[i] = miCaminoW2.PesoTotalEnW2()\tcc*{$O$(1)}
+    }
+  }
+  tablaDistanciasW1[destino] \asignar 0\tcc*{$O$(1)}
+  tablaDistanciasW2[destino] \asignar 0\tcc*{$O$(1)}
+\end{algoritmo}
+
+3) La complejidad del ciclo depende de la complejidad del código que se ejecuta en cada iteración, que es $O(n^3+n*m*(log(n)+log(m))))$, y de la cantidad de veces que se ejecuta este código, 
+es decir, cuantas veces itera. En principio, la cantidad de veces que itera es $cotaIteraciones$, pero dentro del ciclo podría pasar que la función variante del ciclo vuelva al punto inicial. 
+Esto sucede cuando la búsqueda local me devuelve un mejor camino que el almacenado en camino actual, léase mejor como de menor peso, lo que puede suceder $m$ veces. 
+
+Esto es porque búsqueda 
+local no me puede devolver infinita cantidad de caminos mejores, sino que está acotada por la cantidad de caminos fundamentalmente distintos que les pasemos (léase como fundamentalmente distintos
+que no compartan aristas que generen una solución óptima local), debido a que caminos no distintos fundamentalmente generan la misma solución óptima local. Luego, la cantidad de caminos
+fundamentalmente distintos puede ser acotada por $m$ ya que en el peor de los casos los caminos fundamentalmente distintos no tienen ninguna arista en común.
+
+Luego, la búsqueda local solo puede devolverme $m$ soluciones óptimas distintas, así que el índice del ciclo solo puede volver a inicializarse $m$ veces. Luego, la complejidad del ciclo es la
+complejidad del código interior por $m*cotaIteraciones$ que es la cantidad máxima de veces que puede iterar.
+
+4) Por el análisis de complejidad presentado en el item 5.2 del TP3 original. 
+
+5) Este algoritmo es iterativo por lo que la complejidad total es la suma de las complejidades de cada linea.
+
+6) La complejidad del ciclo es $O$($n*mlog(m)$) si itera sobre todos los nodos. Si no lo hace hay un costo de $O$($mlog(n)+n$) al
+  cortarlo. Entonces su complejidad de peor caso es $O$($m(log(n)+nlog(m))+n$).
+  
+7) En el código, en esta parte llamamos a la función FiltrarInfactibles. A continuación agregamos un breve análisis de la complejidad de esta función como explicación del orden de complejidad
+mencionado.
+
+\begin{algoritmo}{FiltrarInfactibles}{\In{aristas}{list<Arista>}, \In{verticeActual}{Vertice}, \In{kRestante}{double}, \In{miCamino}{Camino}, \In{tablaDistanciasW1}{vector<double>}}[list<Arista>]
+[][][$O$($m$)]
+\;
+  \For(\tcc*[f]{$O$($m$)}) {Iterador(list) it \asignar aristas.begin(); it $\neq$ aristas.end(); it++}{
+    double pesoOpcion \asignar it$\rightarrow$PesoW1()\tcc*{$O$(1)}
+    Vertice verticeDeOpcion \asignar VerticeDeDestino(*it, verticeActual)\tcc*{$O$(1)}
+    bool opcionNoValida \asignar miCamino.enCamino(verticeDeOpcion) $\lor$ NoHayCamino(verticeDeOpcion, tablaDistanciasW1, kRestante-pesoOpcion)\tcc*{$O$(1)}
+    \If(\tcc*[f]{$O$(1)}){$\neg$opcionNoValida}{
+      res.AgregarAtras(*it)\tcc*{$O$(1)}
+    }
+  }
+  \return res\tcc*{$O$($m$)}
+\end{algoritmo}
+
+
+
+\begin{comment}
+\begin{algoritmo}{Ordenar}{\In{aristas}{list<Arista>}, \In{tablaDistancias}{vector<double>}, \In{verticeActual}{Vertice}}[vector<AristaYPotencial>]
+[][][$O$($mlog(m)$)]
+\;
+  vector<AristaYPotencial> res(aristas.size())\tcc*{$O$($m$)}
+  Nat i \asignar 0\tcc*{$O$(1)}
+  \For(\tcc*[f]{$O$($m$)}) {Iterador(list) it \asignar aristas.begin(); it $\neq$ aristas.end(); it++, i++}{
+    AristaYPotencial par\tcc*{$O$(1)}
+    par.first \asignar *it\tcc*{$O$(1)}
+    Vertice verticeDeOpcion \asignar VerticeDeDestino(*it, verticeActual)\tcc*{$O$(1)}
+    par.second \asignar tablaDistancias[verticeDeOpcion]\tcc*{$O$(1)}
+    res[i] \asignar par\tcc*{$O$(1)}
+  }
+  sort(res.begin(), res.end(), CompararPotenciales)\tcc*{$O$($mlog(m)$)}
+  \return res\tcc*{$O$($m$)}
+\end{algoritmo}
+\end{comment}
+\subsection{Experimentación}
+
+\includegraphics[width=1\textwidth]{grasp_constantizado.png}
+\includegraphics[width=1\textwidth]{grasp_linealizado.png}
+
+Ambos gráficos fueron realizados con grafos completos, y por lo tanto $m = \frac{n*(n-1)}{2}$
+
+\includegraphics[width=1\textwidth]{densidades_grasp.png}
+
+\subsubsection{Conclusiones}
+
+La experimentación se realizó con el parámetro $cantIteraciones = 100$, y se dividieron los tiempos de ejecución por la complejidad $O$($cotaIteraciones*(n^3+n*m*(log(n)+log(m))))$).\\
+
+Una observación interesante es que la complejidad de peor caso de nuestro algoritmo es $O$($m*cotaIteraciones*(n^3+n*m*(log(n)+log(m))))$) ya que no es fácil acotar cuantas veces se correrá el algoritmo de búsqueda
+local hasta que no suceda un cambio en $cotaIteraciones$ iteraciones.
+
+Sin embargo en los primeros dos gráficos podemos notar que si utilizamos $O$($cotaIteraciones*(n^3+n*m*(log(n)+log(m))))$)
+para constantizar y linealizar nos
+quedan gráficos muy parecidos a los que uno esperaría si esa fuera su complejidad, por lo que podemos suponer que $O$($cotaIteraciones*(n^3+n*m*(log(n)+log(m))))$) es su complejidad promedio. También podríamos decir
+que dadas las mediciones la complejidad del peor caso rara vez se alcanza.\\
+
+En el último gráfico, se ve que GRASP corre ligeramente más rápido a menor densidad, aunque la diferencia de tiempo de ejecución entre las distintas densidades es menor que la que uno intuitivamente esperaría.
+Pero tiene sentido al considerar que en el caso promedio el único
+lugar en el que $m$ aparece en la complejidad del algoritmo es en la búsqueda local, que tiene complejidad $O$($n^3+n*m*log(n)$), dado que $m$ esta acotada por $n^2$ la complejidad se parece mucho independientemente
+de el tamaño de la m.
+
+Esto muestra nuevamente que la complejidad de peor caso es una cota muy superior a la complejidad promedio, ya que si la cantidad de ejes afectara tanto a la complejidad debería verse reflejada en el ultimo gráfico.\\
+
+En conclusión podríamos decir que la complejidad verdadera de el algoritmo es mucho mas parecida a $O$($cotaIteraciones*(n^3+n*m*(log(n)+log(m))))$) que a $O$($m*cotaIteraciones*(n^3+n*m*(log(n)+log(m))))$).
+\newline
+
+Observación: Para tomar las mediciones, se corre GRASP 20 veces para cada $n$ y se toma el mínimo de todos esos tiempos, en lugar de hacer un promedio.

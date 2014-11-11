@@ -1,0 +1,21 @@
+\subsection{Sobre la complejidad }
+ En todos los ejercicios trabajamos sobre el Modelo Uniforme. Por lo tanto suponemos en todos los casos que las asignaciones y comparaciones 
+ de tipos básicos, definición de variables, creación de iteradores y operaciones matemáticas estándar tienen una complejidad constante.
+ 
+\subsection{Sobre la implementación }
+La carpeta del tp contiene todos los archivos usados en la implementación del problema, también contiene una subcarpeta llamada Tests, que contiene todo lo relativo al testeo del ejercicio. La carpeta de Tests contiene los generadores de instancias aleatorias, la experimentación, y las comparaciones entre heurísticas, que fueron usadas para crear los gráficos.
+ 
+También se adjuntan Makefile's para asegurar que el proceso de compilación sea el mismo. 
+ 
+ \subsection{Sobre la ejecución }
+ Para la ejecución de los ejecutables, debe pasarse como parámetro un 1 o un 0 que indica si debe 
+ tomar mediciones o no. 1 significa que si, 0 que no debe hacerlo, además deben pasarse parámetros adicionales indicando que heuristica se desea aplicar(exacto, goloso, local y grasp). Finalmente, se debe usar el operador de redirección <, seguido del nombre del archivo que contiene las instancias de test.
+ La ejecución de los generadores de instancias es directa, luego se pide ingresar los parámetros por consola, durante la ejecución.  
+ 
+  
+ \subsection{Sobre la experimentación }
+A fin de reducir el $ruido$, ejecutamos 20 veces la resolución de la misma instancia, y tomamos el tiempo final como
+el promedio de los tiempos sumados.
+\subsubsection{Medición de Tiempos}
+Para realizar la medición de tiempos, utilizamos el tipo timespec.
+

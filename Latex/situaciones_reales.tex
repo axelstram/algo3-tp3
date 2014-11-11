@@ -1,0 +1,68 @@
+\subsection{Ejemplo 1: Viaje en auto} Queremos minimizar la distancia recorrida sin quedarte sin nafta, 
+teniendo un tanque con k cantidad de nafta que no puede ser recargado (por falta de presupuesto).
+\paragraph{Modelado en un grafo} Los nodos son las ciudades (pueblos, estaciones, lugares turísticos o cualquier cruce de caminos).
+Las aristas son las rutas que unen ciudades. El peso $w_1$ es la cantidad de nafta necesaria para 
+recorrer ese tramo, y $w_2$ la distancia entre las ciudades. Nótese que no son dependientes $w_1$ y $w_2$ entre si; podemos necesitar mas
+nafta para una distancia mas corta si, 
+por ejemplo, tenemos que subir una cuesta o ir a una velocidad máxima determinada.
+
+\subsection{Ejemplo 2: Súper Minis-Vacaciones} Fuckensio lleva toda su vida ahorrando para irse de vacaciones a $Wolololandia$ y junto $K$ 
+cantidad de dinero, del que destino $K'$ para el viaje de ida.
+Como a Fuckensio le pagan por hora de trabajo independientemente del horario en que la realice, decidió tomarse solo unos días de vacaciones, 
+teniendo en cuenta hasta la ultima hora del 
+viaje, por lo que necesita llegar
+a la $Wolololandia$ lo mas rápido posible, porque Fuckensio es pobre. Luego, usaremos este algoritmo para ayudarle a elegir el viaje óptimo.
+\paragraph{Modelado en un grafo} Los nodos son las ciudades donde empiezan y terminan los vuelos de la aerolínea, que son representados por 
+las aristas. El peso $w_1$ representa 
+el costo del viaje y el peso $w_2$ representa el tiempo que dura el vuelo. Para simplificar el problema, asumimos que Fuckensio es una 
+persona muy $Snob$ y como no quiere compartir 
+el avión con nadie,alquilo un avión y pilotos privados por viaje.
+Es decir, que puede partir inmediatamente luego de llegar al aeropuerto.
+
+\subsection{Ejemplo 3: Pokemoon recargado.} Nuestra historia comienza en un momento critico del siglo 21. Un grupo anarquista llamado 
+``Los Frikis Originales'', descontentos con 
+la facilidad de los juegos actuales, realizo una protesta sobre los mismos. Dicho grupo determino que el mejor juego de la historia 
+era el Pokemoon, por lo que 
+comenzó a enviar cartas (y mails, y bombas) a las instalaciones de la compañía GameBoi exigiendo nuevas versiones del juego Pokemoon
+- Hoja Verde. Este desmadre de ``frikismo''
+llego a tal nivel que los llamados ``Frikis Originales'' rastrearon a cada uno de los programadores del juego original y enviaron sus
+reclamos a las casas de los mismos. 
+
+Esto molesto a los programadores. Por lo tanto, anunciaron que crearían un reto final, súper difícil, que solo los jugadores veteranos
+podrían superar. Ahora bien, dichos programadores no
+tenían ganas de hacer 
+un nuevo juego, por lo que se limitaron a aumentar la dificultad del original. Lograron esto, mediante el borrado de pedazos el código.
+Es decir, le sacaron jugabilidad al juego.
+
+Ahora el nuevo reto consiste, obviamente, en ganar la Liga Pokemoon. Sin embargo, las reglas han cambiado. Ahora no existen los hospitales
+Pokemoon, ni hay posibilidad de capturar o hacer evolucionar a 
+los pokemoon, dado que ya no hay pokemoon salvajes (porque fueron todos capturaron por los frikis originales en la primera versión
+del juego). Tampoco hay misiones extras. 
+Lo que esto significa, es que debes
+pasar por los gimnasios, uno tras otro, y llegar a la final, sin poder curar nunca a tus pokemoon. Y como que los programadores estaban 
+realmente enfadados, decidieron aumentar la dificultad de la final, 
+para que todos los jugadores llegaran con relativa facilidad hasta ella, pero ninguno pudiera pasarla.
+
+Cuando el nuevo juego salio a la venta, nuestro protagonista Bill, un miembro de los ``Frikis Originales'', muy ilusionado descargo 
+(ilegalmente) e instalo dicho juego a primera hora de su
+mañana. Cuando se disponía a jugar, luego de finalizada la instalación una hora mas tarde, apareció su madre recordándole que debía 
+trabajar para independizarse, a sus 
+cuarenta años, y que a las 17:00 hs pm tenia que presentarse en el McKonalls de junto para 
+cumplir su horario laboral. Dado esto, a Bill le restaban 3 horas para terminar su juego, si quería llegar a tiempo.
+
+Es por esto que Bill se encontraba en un dilema, pues quería terminar el juego y estimaba que la final podía costarle media hora de 
+juego. Siendo tan friki como es, Bill puede estimar cuanto
+tiempo le va a costar y llegar y
+vencer en cada gimnasio con los pokemoon de que dispone, y cuan heridos van a terminar los mismos después de cada combate. Como no sabe 
+nada sobre la final, lo que Bill quiere lograr es minimizar el daño total sufrido por el conjunto de sus pokemoon. 
+
+Ahora bien, como Bill es un gran amigo nuestro, pues ha cuidado de nuestros pokemoon en su computadora durante mucho tiempo, 
+decidimos ayudarlo modelando su problema con CACM. 
+
+\paragraph{Modelado en un grafo} Los nodos son los gimnasios y las aristas representan los caminos entre ellos, si es posible llegar 
+de uno a otro. El peso $w_1$ representa 
+el tiempo que le lleva, al personaje de Bill, ir de un gimnasio a otro y vencer en dicho gimnasio. El peso $w_2$ representa el daño 
+que reciben los pokemoon en conjunto al finalizar cada combate.
+La cota son las dos horas que le restan, pues hemos gastado media en escribir el grafo asociado al problema.
+
+\paragraph{Problema adicional:} ¿A que hora comienza la mañana de Bill?
